@@ -10,7 +10,7 @@ This solution uses cURL to call OpenAI APIs. OpenAI will not train their models 
 
 ## Prerequisites
 
-You will need an [OpenAI API key](https://help.openai.com/en/articles/4936850-where-do-i-find-my-secret-api-key) and have it exported in the environment as `OPENAI_API_KEY`.
+You will need an [OpenAI API key](https://help.openai.com/en/articles/4936850-where-do-i-find-my-secret-api-key) and have it exported in the environment as `OPENAI_API_KEY`, i.e. run `export OPENAI_API_KEY="sk-SOME_RANDOM_STRING`.
 
 Minion also assumes that you have [jq](https://jqlang.github.io/jq/) installed. If you have [Homebrew](https://brew.sh/) installed, it's as easy as `brew install jq` to get it.
 
