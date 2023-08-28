@@ -1,6 +1,6 @@
 # Minion: Minimalist CLI wrapper for ChatGPT 👾
 
-## The easiest and most lightweight way to use ChatGPT on the CLI, for developers.
+## The easiest and most lightweight way for developers to use ChatGPT in a CLI.
 
 Minion is a simple CLI wrapper that calls OpenAI APIs with prefabbed prompts and your Git diff data. It expedites proactive - rather than reactive - code reviews, commit messaging, and test generation.
 
