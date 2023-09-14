@@ -58,6 +58,14 @@ Prompt:
 You are a world-class software engineer. You have been asked to write appropriate unit tests using $TEST_TOOL for the changes. Tests should only be made for our source code, not for dependencies, version changes, configuration, or similar. We are aiming for full code coverage, if possible. If there are no applicable changes, don't write any tests. These are the changes:
 ```
 
+### Ask a question
+
+Finally, you may just want to conveniently ask a question!
+
+```bash
+minion ask "Tell me about 5 practical ways to minimize technical debt in a React project."
+```
+
 ## Installation
 
 You can use it just as any old script in a project if you want...
