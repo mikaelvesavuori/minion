@@ -12,7 +12,11 @@ This solution uses cURL to call OpenAI APIs. OpenAI will not train their models 
 
 You will need an [OpenAI API key](https://help.openai.com/en/articles/4936850-where-do-i-find-my-secret-api-key) and have it exported in the environment as `OPENAI_API_KEY`, i.e. run `export OPENAI_API_KEY="sk-SOME_RANDOM_STRING`.
 
+**Minion assumes you have Bash.**
+
 Minion also assumes that you have [jq](https://jqlang.github.io/jq/) installed. If you have [Homebrew](https://brew.sh/) installed, it's as easy as `brew install jq` to get it.
+
+Further, the _installation script_ assumes a shell with Zsh support, as it modifies the `.zshrc` file. Exactly how you do the installation and mapping the command `minion` to the Bash script is ultimately up to you.
 
 ## Features
 
