@@ -72,7 +72,7 @@ minion ask "Tell me about 5 practical ways to minimize technical debt in a React
 
 ## Installation
 
-You can use it just as any old script in a project if you want...
+The easiest "one-off" way would be to use Minion just as any old script in a project if you want...
 
 _But the nicer option is to use the `install.sh` script._
 
@@ -81,6 +81,8 @@ It will:
 - Make a root level directory named `.minion`
 - Copy `minion.sh` to the new directory
 - Add a line to your `.zshrc` with an alias (`minion`) that runs the script
+
+_Please refer to the [Prerequisites](#prerequisites) section above before installing._
 
 Feel free to modify the installation script or do it your way if this doesn't match how you'd like it to be set up.
 

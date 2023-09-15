@@ -1,11 +1,13 @@
 #!/bin/bash
 
+MINION_VERSION="1.0.0"
+
 # Colors
 GREEN='\033[0;32m'
 RESET='\033[0m' # Reset color to default
 
 # Presentation
-echo -e "${GREEN}--- 👾 Minion: Minimalist CLI wrapper for ChatGPT 👾 ---${RESET}"
+echo -e "${GREEN}--- 👾 Minion: Minimalist CLI wrapper for ChatGPT 👾 Version: ${MINION_VERSION} ---${RESET}"
 
 # Validation
 if [ -z "$OPENAI_API_KEY" ]; then
@@ -38,12 +40,21 @@ function call_openai_api() {
     "model": $model
   }')
 
-  local RESULT=$(
+  local RESPONSE=$(
     curl -X POST "$API_URL" \
       -H 'Content-Type: application/json' \
       -H "Authorization: Bearer $OPENAI_API_KEY" \
-      -d "$PAYLOAD" | jq -r '.choices[0].message.content'
+      -d "$PAYLOAD" \
+      --silent
   )
+
+  # Handle success/error cases
+  if [[ $(echo "$RESPONSE" | jq 'has("error")') == "true" ]]; then
+    ERROR_MESSAGE=$(echo "$RESPONSE" | jq -r '.error.message')
+    RESULT="Error: $ERROR_MESSAGE"
+  else
+    RESULT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
+  fi
 
   echo "$RESULT"
 }
