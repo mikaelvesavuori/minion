@@ -90,7 +90,7 @@ For tests, the prompt is explicit about the tool to use. To change the tool to s
 
 ## Usage
 
-Run `minion [commit|review|test]` in a Git repository.
+Run `minion [commit|review|test|ask]` in a Git repository.
 
 ## Contributing
 

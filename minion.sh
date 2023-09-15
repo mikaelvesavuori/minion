@@ -84,8 +84,8 @@ function test() {
 # Main function
 start() {
   if [ $# -eq 0 ]; then
-    echo "Usage: minion [ask|review|commit|test]"
-    echo "Valid options: ask, review, commit, test"
+    echo "Usage: minion [review|commit|test|ask]"
+    echo "Valid options: review, commit, test, ask"
     exit 1
   fi
 
@@ -108,7 +108,7 @@ start() {
     ;;
   *)
     echo "Invalid option: $1"
-    echo "Valid options: ask,review, commit, test"
+    echo "Valid options: review, commit, test, ask"
     exit 1
     ;;
   esac
