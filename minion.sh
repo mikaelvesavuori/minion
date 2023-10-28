@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MINION_VERSION="1.0.0"
+MINION_VERSION="1.1.0"
 
 # Colors
 GREEN='\033[0;32m'
@@ -84,19 +84,46 @@ function review() {
 }
 
 function test() {
-  local TEST_TOOL="Jest"
-  local PROMPT="You are a world-class software engineer. You have been asked to write appropriate unit tests using $TEST_TOOL for the changes. Tests should only be made for our source code, not for dependencies, version changes, configuration, or similar. We are aiming for full code coverage, if possible. If there are no applicable changes, don't write any tests. These are the changes:"
+  local TOOL="Jest"
+
+  if [ -n "$1" ]; then
+    TOOL="$1"
+  fi
+
+  echo "Using $TOOL as the testing tool..."
+
+  local PROMPT="You are a world-class software engineer. You have been asked to write appropriate unit tests using $TOOL for the changes. Tests should only be made for our source code, not for dependencies, version changes, configuration, or similar. We are aiming for full code coverage, if possible. If there are no applicable changes, don't write any tests. These are the changes:"
   local RESULT=$(call_openai_api "$PROMPT" true)
 
   echo -e "${GREEN}Generated tests:${RESET}\n---------------------------\n"
   echo "$RESULT"
 }
 
+function diagram() {
+  local VALID_TYPES=("uml" "mermaid" "sequence_diagram" "class_diagram" "flowchart" "graphviz")
+  local TOOL="mermaid"
+
+  for valid_value in "${VALID_TYPES[@]}"; do
+    if [ "$1" == "$valid_value" ]; then
+      TOOL="$1"
+      break
+    fi
+  done
+
+  echo "Using $TOOL as the diagram type..."
+
+  local PROMPT="You are a world-class software architect. You have been asked to produce diagrams using $TOOL for the changes. Focus on our own code, and only add external dependencies if necessary. If it's unclear what the solution is, then don't make diagrams and voice your concern and reasons for stopping. These are the changes:"
+  local RESULT=$(call_openai_api "$PROMPT" true)
+
+  echo -e "${GREEN}Generated diagram:${RESET}\n---------------------------\n"
+  echo "$RESULT"
+}
+
 # Main function
 start() {
   if [ $# -eq 0 ]; then
-    echo "Usage: minion [review|commit|test|ask]"
-    echo "Valid options: review, commit, test, ask"
+    echo "Usage: minion [review|commit|test|ask|diagram]"
+    echo "Valid options: review, commit, test, ask, diagram"
     exit 1
   fi
 
@@ -115,11 +142,15 @@ start() {
     ;;
   "test")
     echo "Writing tests..."
-    test
+    test $2
+    ;;
+  "diagram")
+    echo "Producing diagrams..."
+    diagram $2
     ;;
   *)
     echo "Invalid option: $1"
-    echo "Valid options: review, commit, test, ask"
+    echo "Valid options: review, commit, test, ask, diagram"
     exit 1
     ;;
   esac

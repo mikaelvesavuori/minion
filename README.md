@@ -50,16 +50,32 @@ You are a world-class software engineer. You have been assigned to review the fo
 
 ### Write tests for changes
 
-Generate tests for your changes. _Make sure to set the `TEST_TOOL` variable to a relevant choice for you._
+Generate tests for your changes and your tool of choice.
 
 ```bash
-minion test
+minion test # Defaults to Jest
+
+minion test {tool_name} # Defaults to Jest
+minion test ava
 ```
 
 Prompt:
 
 ```text
-You are a world-class software engineer. You have been asked to write appropriate unit tests using $TEST_TOOL for the changes. Tests should only be made for our source code, not for dependencies, version changes, configuration, or similar. We are aiming for full code coverage, if possible. If there are no applicable changes, don't write any tests. These are the changes:
+You are a world-class software engineer. You have been asked to write appropriate unit tests using $TOOL for the changes. Tests should only be made for our source code, not for dependencies, version changes, configuration, or similar. We are aiming for full code coverage, if possible. If there are no applicable changes, don't write any tests. These are the changes:
+```
+
+### Create a diagram for changes
+
+Generate one of several types of diagrams for your changes.
+
+The allowed types are: `mermaid` (default), `uml`, `sequence_diagram`, `class_diagram`, `flowchart`, and `graphviz`.
+
+```bash
+minion diagram # Defaults to Mermaid
+
+minion diagram {diagram_type}
+minion diagram sequence_diagram
 ```
 
 ### Ask a question
@@ -92,11 +108,9 @@ You will need to source or reload your IDE for the changes to be activated.
 
 The model used is `gpt-3.5-turbo-16k`. If you want to change this, simply update the `MODEL` variable to the model you want to use.
 
-For tests, the prompt is explicit about the tool to use. To change the tool to something other than [Jest](https://jestjs.io), update the value of `TEST_TOOL`.
-
 ## Usage
 
-Run `minion [commit|review|test|ask]` in a Git repository.
+Run `minion [commit|review|test|ask|diagram]` in a Git repository.
 
 ## Contributing
 
