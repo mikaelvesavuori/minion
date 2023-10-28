@@ -55,7 +55,7 @@ Generate tests for your changes and your tool of choice.
 ```bash
 minion test # Defaults to Jest
 
-minion test {tool_name} # Defaults to Jest
+minion test {tool_name}
 minion test ava
 ```
 
