@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MINION_VERSION="1.1.0"
+MINION_VERSION="1.1.1"
 
 # Colors
 GREEN='\033[0;32m'
