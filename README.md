@@ -6,7 +6,7 @@ Minion is a simple CLI wrapper that calls OpenAI APIs with prefabbed prompts and
 
 ## What to know
 
-This solution uses cURL to call OpenAI APIs. OpenAI will not train their models based on API calls, so this is a "safer" solution than, for example, using the web version.
+This solution uses cURL to call OpenAI APIs. OpenAI will not train their models based on API calls, so this is a "safer" solution than, for example, using the web version of ChatGPT.
 
 ## Prerequisites
 
