@@ -7,7 +7,7 @@ GREEN='\033[0;32m'
 RESET='\033[0m' # Reset color to default
 
 # Presentation
-echo -e "${GREEN}--- 👾 Minion: Minimalist CLI wrapper for ChatGPT 👾 Version: ${MINION_VERSION} ---${RESET}"
+echo -e "${GREEN}--- 👾 Minion: Minimalist CLI wrapper for OpenAI APIs 👾 Version: ${MINION_VERSION} ---${RESET}"
 
 # Validation
 if [ -z "$OPENAI_API_KEY" ]; then

@@ -1,8 +1,8 @@
-# Minion: Minimalist CLI wrapper for ChatGPT 👾
+# Minion: Minimalist CLI wrapper for OpenAI APIs 👾
 
-## The easiest and most lightweight way for developers to use ChatGPT in a CLI.
+## The easiest and most lightweight way for developers to use OpenAI APIs in a CLI.
 
-Minion is a simple CLI wrapper that calls OpenAI APIs with prefabbed prompts and your Git diff data. It expedites proactive - rather than reactive - code reviews, commit messaging, and test generation.
+Minion is a simple CLI wrapper that calls OpenAI APIs with prefabbed prompts and your Git diff data. It expedites proactive - rather than reactive - code reviews, commit messaging, test generation, and diagramming.
 
 ## What to know
 
@@ -36,7 +36,7 @@ Generate a Conventional Commits style commit message for the following changes. 
 
 ### Code review
 
-Have ChatGPT generate a code review, focusing on issues and to give feedback on how the changes could be refactored.
+Have the LLM generate a code review, focusing on issues and to give feedback on how the changes could be refactored.
 
 ```bash
 minion review
@@ -76,6 +76,12 @@ minion diagram # Defaults to Mermaid
 
 minion diagram {diagram_type}
 minion diagram sequence_diagram
+```
+
+Prompt:
+
+```text
+You are a world-class software architect. You have been asked to produce diagrams using $TOOL for the changes. Focus on our own code, and only add external dependencies if necessary. If it's unclear what the solution is, then don't make diagrams and voice your concern and reasons for stopping. These are the changes:
 ```
 
 ### Ask a question
