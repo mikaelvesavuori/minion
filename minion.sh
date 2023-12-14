@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MINION_VERSION="1.1.1"
+MINION_VERSION="1.2.0"
 
 # Colors
 GREEN='\033[0;32m'
@@ -18,13 +18,22 @@ fi
 function call_openai_api() {
   local PROMPT="$1"
   local INCLUDE_CHANGES="$2"
+  local FILE="$3"
 
   CHANGES=$(git diff HEAD)
+  ESCAPED_CHANGES=""
 
-  if ("$INCLUDE_CHANGES" = true); then
+  if [ "$INCLUDE_CHANGES" = false ]; then
+    if [ -n "$FILE" ]; then
+      ESCAPED_CHANGES=$(cat $FILE | jq -sRr @json)
+    else
+      echo "FILE path not provided."
+      exit 1
+    fi
+  fi
+
+  if [ "$INCLUDE_CHANGES" = true ]; then
     ESCAPED_CHANGES=$(echo "$CHANGES" | jq -sRr @json)
-  else
-    ESCAPED_CHANGES=""
   fi
 
   local API_URL="https://api.openai.com/v1/chat/completions"
@@ -61,7 +70,6 @@ function call_openai_api() {
 
 function ask() {
   local PROMPT="$1"
-  echo "---> $PROMPT"
   local RESULT=$(call_openai_api "$PROMPT" false)
 
   echo "$RESULT"
@@ -84,16 +92,55 @@ function review() {
 }
 
 function test() {
-  local TOOL="Jest"
+  local OPTION_1="" # Option switch
+  local OPTION_2="" # Tool
+  local OPTION_3="" # Path
 
-  if [ -n "$1" ]; then
-    TOOL="$1"
+  if [ -n "$1" ]; then OPTION_1="$1"; fi
+  if [ -n "$2" ]; then OPTION_2="$2"; fi
+  if [ -n "$3" ]; then OPTION_3="$3"; fi
+
+  # First input must be a valid keyword
+  options=("changes" "file" "api")
+  if [[ ! "${options[@]}" =~ "$OPTION_1" ]]; then
+    echo "Missing one of the required options: 'changes', 'file', or 'api'. Exiting..."
+    exit 1
   fi
 
-  echo "Using $TOOL as the testing tool..."
+  # Ensure are required values are passed in
+  if [[ ("$OPTION_1" == "file" || "$OPTION_1" == "api") ]]; then
+    if [ -z "$OPTION_2" ]; then
+      echo "Missing a value for the 'tool' option. Exiting..."
+      exit 1
+    fi
 
-  local PROMPT="You are a world-class software engineer. You have been asked to write appropriate unit tests using $TOOL for the changes. Tests should only be made for our source code, not for dependencies, version changes, configuration, or similar. We are aiming for full code coverage, if possible. If there are no applicable changes, don't write any tests. These are the changes:"
-  local RESULT=$(call_openai_api "$PROMPT" true)
+    if [ -z "$OPTION_3" ]; then
+      echo "Missing a value for the 'path' option. Exiting..."
+      exit 1
+    fi
+  fi
+
+  # Set values
+  local TEST_TYPE="unit"
+  if [ "$OPTION_1" = "api" ]; then
+    TEST_TYPE="integration"
+  fi
+
+  local TOOL="an appropriate tool"
+  if [ -n "$OPTION_2" ]; then
+    TOOL="$OPTION_2"
+  fi
+
+  # Create prompt
+  local PROMPT_START="You are a world-class software engineer."
+  local PROMPT_BASE="Tests should only be made for our source code, not for dependencies, version changes, configuration, or similar. We are aiming for full code coverage, if possible. If there are no applicable changes, don't write any tests. Only provide code, no explanations. These are the changes:"
+  local PROMPT="$PROMPT_START You have been asked to write appropriate $TEST_TYPE tests using $TOOL for the changes. $PROMPT_BASE"
+
+  if [ -n "$OPTION_3" ]; then
+    local RESULT=$(call_openai_api "$PROMPT" false "$OPTION_3") # We got a path, so use the file at the path
+  else
+    local RESULT=$(call_openai_api "$PROMPT" true) # Use the current changes
+  fi
 
   echo -e "${GREEN}Generated tests:${RESET}\n---------------------------\n"
   echo "$RESULT"
@@ -142,7 +189,7 @@ start() {
     ;;
   "test")
     echo "Writing tests..."
-    test $2
+    test $2 $3 $4
     ;;
   "diagram")
     echo "Producing diagrams..."

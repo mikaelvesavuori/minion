@@ -48,21 +48,24 @@ Prompt:
 You are a world-class software engineer. You have been assigned to review the following changes. You will provide actionable feedback while having a supportive tone. Focus on issues and problems, not mincing words. Highlight the issues and address each separately. If one issue is very similar to another, group them together. If one issue has effect on another, explain how. Give feedback on things that could be refactored or improved with common design patterns. Also, ensure any new code has tests if applicable (i.e. not for dependencies, version changes, configuration, or similar). These are the changes:
 ```
 
-### Write tests for changes
+### Write tests for changes or individual files
 
-Generate tests for your changes and your tool of choice.
+Generate tests for your changes or individual files, using your tool of choice.
 
 ```bash
-minion test # Defaults to Jest
+minion test changes # Generate unit tests for all code changes using "an appropriate tool"
 
-minion test {tool_name}
-minion test ava
+minion test changes {tool_name} # Generate unit tests for all code changes using the provided tool
+
+minion test file {tool_name} {path} # Generate unit tests for the file at the path using the provided tool
+
+minion test api {tool_name} {path} # Generate integration tests for the schema/file at the path using the provided tool
 ```
 
 Prompt:
 
 ```text
-You are a world-class software engineer. You have been asked to write appropriate unit tests using $TOOL for the changes. Tests should only be made for our source code, not for dependencies, version changes, configuration, or similar. We are aiming for full code coverage, if possible. If there are no applicable changes, don't write any tests. These are the changes:
+You are a world-class software engineer. You have been asked to write appropriate {TEST_TYPE} tests using {TOOL} for the changes. Tests should only be made for our source code, not for dependencies, version changes, configuration, or similar. We are aiming for full code coverage, if possible. If there are no applicable changes, don't write any tests. Only provide code, no explanations. These are the changes:
 ```
 
 ### Create a diagram for changes

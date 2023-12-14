@@ -12,9 +12,7 @@ jest-coverage/
 build/
 dist/
 package/
-.webpack/
-.esbuild/
-.serverless/
+testing/
 
 # Diagrams
 **/*.bkp
