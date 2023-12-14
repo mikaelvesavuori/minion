@@ -148,6 +148,6 @@ There is a dedicated [CONTRIBUTING.md](CONTRIBUTING.md), but generally I'm happy
 - Support for changing the model used
 - Support for configuration files to drive tool/language choices and such
 - Support for custom code/docs review policies
-- Generate code froms diagram (`minion scaffold`)
+- Generate code from diagram (`minion scaffold`)
 - `minion review diagrams <PATH>`, add support when OpenAI APIs supports image input
 - `minion review full`, using full codebase when OpenAI APIs support very big context windows
