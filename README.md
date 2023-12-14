@@ -4,6 +4,20 @@
 
 Minion is a simple CLI wrapper that calls OpenAI APIs with prefabbed prompts and your Git diff data. It expedites proactive - rather than reactive - code reviews, commit messaging, test generation, and diagramming.
 
+### Key modalities
+
+#### Assist
+
+Generate unit tests from code, integration tests from schemas, or any applicable tests from your changes.
+
+#### Feedback
+
+Code reviews from your files or changes.
+
+#### Coaching
+
+Supportive and coaching prompts helps you build better solutions.
+
 ## What to know
 
 This solution uses cURL to call OpenAI APIs. OpenAI will not train their models based on API calls, so this is a "safer" solution than, for example, using the web version of ChatGPT.
@@ -39,7 +53,9 @@ Generate a Conventional Commits style commit message for the following changes. 
 Have the LLM generate a code review, focusing on issues and to give feedback on how the changes could be refactored.
 
 ```bash
-minion review
+minion review changes # Review all changes
+
+minion review file {path} # Review a document at a given location
 ```
 
 Prompt:
@@ -75,10 +91,11 @@ Generate one of several types of diagrams for your changes.
 The allowed types are: `mermaid` (default), `uml`, `sequence_diagram`, `class_diagram`, `flowchart`, and `graphviz`.
 
 ```bash
-minion diagram # Defaults to Mermaid
+minion diagram changes # Defaults to Mermaid
 
-minion diagram {diagram_type}
-minion diagram sequence_diagram
+minion diagram changes {diagram_type} # Choose your own format here
+
+minion diagram file {diagram_type} {path} # Generate diagrams for a specific file, such as an infrastructure-as-code configuration
 ```
 
 Prompt:
@@ -124,3 +141,13 @@ Run `minion [commit|review|test|ask|diagram]` in a Git repository.
 ## Contributing
 
 There is a dedicated [CONTRIBUTING.md](CONTRIBUTING.md), but generally I'm happy to take suggestions and proposals for new features!
+
+## Future ideas
+
+- Support for non-OpenAI providers
+- Support for changing the model used
+- Support for configuration files to drive tool/language choices and such
+- Support for custom code/docs review policies
+- Generate code froms diagram (`minion scaffold`)
+- `minion review diagrams <PATH>`, add support when OpenAI APIs supports image input
+- `minion review full`, using full codebase when OpenAI APIs support very big context windows
