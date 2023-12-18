@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MINION_VERSION="1.3.0"
+MINION_VERSION="1.3.1"
 
 # Colors
 GREEN='\033[0;32m'
@@ -26,9 +26,6 @@ function call_openai_api() {
   if [ "$INCLUDE_CHANGES" = false ]; then
     if [ -n "$FILE" ]; then
       ESCAPED_CHANGES=$(cat $FILE | jq -sRr @json)
-    else
-      echo "FILE path not provided."
-      exit 1
     fi
   fi
 
