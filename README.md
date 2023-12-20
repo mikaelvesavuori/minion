@@ -2,21 +2,13 @@
 
 ## The easiest and most lightweight way for developers to use OpenAI APIs in a CLI.
 
-Minion is a simple CLI wrapper that calls OpenAI APIs with prefabbed prompts and your Git diff data. It expedites proactive - rather than reactive - code reviews, commit messaging, test generation, and diagramming.
+Minion is a simple CLI wrapper that calls OpenAI APIs (of your choice) with prefabbed prompts and, for some use cases, your Git diff data. It expedites proactive - rather than reactive - code reviews, commit messaging, test generation, and diagramming and many more things.
 
-### Key modalities
+Its key modalities are to:
 
-#### Assist
-
-Generate unit tests from code, integration tests from schemas, or any applicable tests from your changes.
-
-#### Feedback
-
-Code reviews from your files or changes.
-
-#### Coaching
-
-Supportive and coaching prompts helps you build better solutions.
+- **Assist**: Generate unit tests from code, integration tests from schemas, or any applicable tests from your changes.
+- **Feedback**: Code reviews from your files or changes.
+- **Coach**: Supportive and coaching prompts helps you build better solutions.
 
 ## What to know
 
@@ -130,9 +122,19 @@ Feel free to modify the installation script or do it your way if this doesn't ma
 
 You will need to source or reload your IDE for the changes to be activated.
 
-## Configuration
+## Configuration and model choice
 
-The model used is `gpt-3.5-turbo-16k`. If you want to change this, simply update the `MODEL` variable to the model you want to use.
+Starting with version `1.4.0`, you will be presented with a list of models when you pass a command to Minion.
+
+If you want to use a default model and skip manual input, then simply create a `minion.json` file with a `model` key with the value for the model you want to use. The file will be read from the current directory.
+
+Example:
+
+```json
+{
+  "model": "gpt-3.5-turbo-16k"
+}
+```
 
 ## Usage
 

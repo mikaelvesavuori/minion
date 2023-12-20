@@ -2,6 +2,7 @@
 .env
 .dccache
 .DS_Store
+minion.json
 
 # Folders
 node_modules/
@@ -13,6 +14,7 @@ build/
 dist/
 package/
 testing/
+ignore/
 
 # Diagrams
 **/*.bkp

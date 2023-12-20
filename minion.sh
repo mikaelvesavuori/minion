@@ -1,10 +1,17 @@
 #!/bin/bash
 
-MINION_VERSION="1.3.1"
+MINION_VERSION="1.4.0"
 
 # Colors
 GREEN='\033[0;32m'
 RESET='\033[0m' # Reset color to default
+
+# Models
+MODEL_1="gpt-3.5-turbo"
+MODEL_2="gpt-3.5-turbo-16k"
+MODEL_3="gpt-4"
+MODEL_4="gpt-4-32k"
+MODEL_5="gpt-4-turbo"
 
 # Presentation
 echo -e "${GREEN}--- 👾 Minion: Minimalist CLI wrapper for OpenAI APIs 👾 Version: ${MINION_VERSION} ---${RESET}"
@@ -15,6 +22,9 @@ if [ -z "$OPENAI_API_KEY" ]; then
   exit 1
 fi
 
+#
+# Call the Open AI APIs.
+#
 function call_openai_api() {
   local PROMPT="$1"
   local INCLUDE_CHANGES="$2"
@@ -33,8 +43,11 @@ function call_openai_api() {
     ESCAPED_CHANGES=$(echo "$CHANGES" | jq -sRr @json)
   fi
 
+  echo
+  echo "Using model: $MODEL"
+
   local API_URL="https://api.openai.com/v1/chat/completions"
-  local MODEL="gpt-3.5-turbo-16k"
+  local MODEL="gpt-3.5-turbo-16k" # See: https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo
   local PAYLOAD=$(jq -n --arg model "$MODEL" --arg prompt "$PROMPT" --arg changes "$ESCAPED_CHANGES" '
   {
     messages: [
@@ -65,6 +78,9 @@ function call_openai_api() {
   echo "$RESULT"
 }
 
+#
+# The "ask" use case.
+#
 function ask() {
   local PROMPT="$1"
   local RESULT=$(call_openai_api "$PROMPT" false)
@@ -72,6 +88,9 @@ function ask() {
   echo "$RESULT"
 }
 
+#
+# The "commit" use case.
+#
 function commit() {
   local PROMPT="Generate a Conventional Commits style commit message for the following changes. Use a compact and terse style. For things like dependencies and other verbose changes, bundle these changes into an overall change description. These are the changes:"
   local RESULT=$(call_openai_api "$PROMPT" true)
@@ -80,6 +99,9 @@ function commit() {
   echo "$RESULT"
 }
 
+#
+# The "review" use case.
+#
 function review() {
   local OPTION_1="" # Option switch
   local OPTION_2="" # Path
@@ -112,6 +134,9 @@ function review() {
   echo "$RESULT"
 }
 
+#
+# The "test" use case.
+#
 function test() {
   local OPTION_1="" # Option switch
   local OPTION_2="" # Tool
@@ -122,8 +147,8 @@ function test() {
   if [ -n "$3" ]; then OPTION_3="$3"; fi
 
   # First input must be a valid keyword
-  options=("changes" "file" "api")
-  if [[ ! "${options[@]}" =~ "$OPTION_1" ]]; then
+  local OPTIONS=("changes" "file" "api")
+  if [[ ! "${OPTIONS[@]}" =~ "$OPTION_1" ]]; then
     echo "Missing one of the required options: 'changes', 'file', or 'api'. Exiting..."
     exit 1
   fi
@@ -167,6 +192,9 @@ function test() {
   echo "$RESULT"
 }
 
+#
+# The "diagram" use case.
+#
 function diagram() {
   local OPTION_1="" # Option switch
   local OPTION_2="" # Tool
@@ -177,8 +205,8 @@ function diagram() {
   if [ -n "$3" ]; then OPTION_3="$3"; fi
 
   # First input must be a valid keyword
-  options=("changes" "file")
-  if [[ ! "${options[@]}" =~ "$OPTION_1" ]]; then
+  local OPTIONS=("changes" "file")
+  if [[ ! "${OPTIONS[@]}" =~ "$OPTION_1" ]]; then
     echo "Missing one of the required options: 'changes' or 'file'. Exiting..."
     exit 1
   fi
@@ -186,8 +214,8 @@ function diagram() {
   local VALID_TYPES=("uml" "mermaid" "sequence_diagram" "class_diagram" "flowchart" "graphviz")
   local TOOL="Mermaid"
 
-  for valid_value in "${VALID_TYPES[@]}"; do
-    if [ "$OPTION_2" == "$valid_value" ]; then
+  for VALID_VALUE in "${VALID_TYPES[@]}"; do
+    if [ "$OPTION_2" == "$VALID_VALUE" ]; then
       TOOL="$2"
       break
     fi
@@ -220,13 +248,38 @@ function diagram() {
   echo "$RESULT"
 }
 
-# Main function
+#
+# Load a Minion configuration file from the current directory.
+#
+load_config() {
+  local CONFIG_FILE="minion.json"
+  local MODEL=""
+
+  if [ -e "$CONFIG_FILE" ]; then
+    CONFIG_DATA=$(jq -c . "$CONFIG_FILE")
+
+    if [ $? -eq 0 ]; then
+      MODEL=$(echo "$CONFIG_DATA" | jq -r .model)
+      echo "$MODEL"
+    fi
+  else
+    echo
+  fi
+}
+
+#
+# Orchestrate the startup and the various use cases.
+#
 start() {
-  if [ $# -eq 0 ]; then
+  if [ $# -le 1 ]; then
     echo "Usage: minion [review|commit|test|ask|diagram]"
     echo "Valid options: review, commit, test, ask, diagram"
     exit 1
   fi
+
+  local MODEL="$1"
+  shift # Shift the arguments so $@ contains only the command line arguments
+  echo
 
   case "$1" in
   "ask")
@@ -259,4 +312,55 @@ start() {
   exit 0
 }
 
-start "$@"
+#
+# Display the model menu.
+#
+model_menu() {
+  echo "Choose an OpenAI API Model:"
+  echo "1. $MODEL_1"
+  echo "2. $MODEL_2"
+  echo "3. $MODEL_3"
+  echo "4. $MODEL_4"
+  echo "5. $MODEL_5"
+  echo "6. Exit"
+}
+
+#
+# Handle the choice of AI model.
+#
+choose_model() {
+  # Check if we have a model set from the configuration file
+  local CONFIG_MODEL=$(load_config)
+  if [ -n "$CONFIG_MODEL" ]; then
+    MODEL="$CONFIG_MODEL"
+    return 0
+  fi
+
+  # A model was not provided through configuration, let user enter their choice
+
+  model_menu
+
+  local CHOICE
+  read -p "Enter choice [1-6]: " CHOICE
+
+  case $CHOICE in
+  1) MODEL="$MODEL_1" ;;
+  2) MODEL="$MODEL_2" ;;
+  3) MODEL="$MODEL_3" ;;
+  4) MODEL="$MODEL_4" ;;
+  5) MODEL="$MODEL_5" ;;
+  6) exit 0 ;;
+  *) echo "Invalid choice." && return 1 ;;
+  esac
+
+  return 0
+}
+
+#
+# Start the program.
+#
+while true; do
+  choose_model && break
+done
+
+start "$MODEL" "$@"
