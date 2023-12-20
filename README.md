@@ -136,6 +136,14 @@ Example:
 }
 ```
 
+Valid choices are:
+
+- `gpt-3.5-turbo`
+- `gpt-3.5-turbo-16k`
+- `gpt-4`
+- `gpt-4-32k`
+- `gpt-4-turbo`
+
 ## Usage
 
 Run `minion [commit|review|test|ask|diagram]` in a Git repository.
