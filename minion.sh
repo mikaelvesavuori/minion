@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MINION_VERSION="1.4.1"
+MINION_VERSION="1.4.2"
 
 # Colors
 GREEN='\033[0;32m'
@@ -52,7 +52,6 @@ function call_openai_api() {
   echo "Using model: $MODEL"
 
   local API_URL="https://api.openai.com/v1/chat/completions"
-  local MODEL="gpt-3.5-turbo-16k" # See: https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo
   local PAYLOAD=$(jq -n --arg model "$MODEL" --arg prompt "$PROMPT" --arg changes "$ESCAPED_CHANGES" '
   {
     messages: [
