@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MINION_VERSION="1.4.0"
+MINION_VERSION="1.4.1"
 
 # Colors
 GREEN='\033[0;32m'
@@ -30,8 +30,13 @@ function call_openai_api() {
   local INCLUDE_CHANGES="$2"
   local FILE="$3"
 
-  CHANGES=$(git diff HEAD)
-  ESCAPED_CHANGES=""
+  local CHANGES=""
+  local ESCAPED_CHANGES=""
+
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    CHANGES=$(git diff HEAD)
+    ESCAPED_CHANGES=""
+  fi
 
   if [ "$INCLUDE_CHANGES" = false ]; then
     if [ -n "$FILE" ]; then
