@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MINION_VERSION="1.4.2"
+MINION_VERSION="1.5.0"
 
 # Colors
 GREEN='\033[0;32m'
@@ -12,6 +12,12 @@ MODEL_2="gpt-3.5-turbo-16k"
 MODEL_3="gpt-4"
 MODEL_4="gpt-4-32k"
 MODEL_5="gpt-4-turbo"
+
+# File to temporarily write file contents to if using directory with files as input
+FILE_CONTENTS_PROMPT_FILE="__minion.filecontents.prompt__.txt"
+
+# Changes to use for prompting
+ESCAPED_CHANGES=""
 
 # Presentation
 echo -e "${GREEN}--- 👾 Minion: Minimalist CLI wrapper for OpenAI APIs 👾 Version: ${MINION_VERSION} ---${RESET}"
@@ -25,28 +31,13 @@ fi
 #
 # Call the Open AI APIs.
 #
-function call_openai_api() {
+call_openai_api() {
   local PROMPT="$1"
   local INCLUDE_CHANGES="$2"
-  local FILE="$3"
+  local PATH_TO_USE="$3"
+  local IS_DIR="$4"
 
-  local CHANGES=""
-  local ESCAPED_CHANGES=""
-
-  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    CHANGES=$(git diff HEAD)
-    ESCAPED_CHANGES=""
-  fi
-
-  if [ "$INCLUDE_CHANGES" = false ]; then
-    if [ -n "$FILE" ]; then
-      ESCAPED_CHANGES=$(cat $FILE | jq -sRr @json)
-    fi
-  fi
-
-  if [ "$INCLUDE_CHANGES" = true ]; then
-    ESCAPED_CHANGES=$(echo "$CHANGES" | jq -sRr @json)
-  fi
+  get_changes "$PATH_TO_USE" "$IS_DIR"
 
   echo
   echo "Using model: $MODEL"
@@ -83,9 +74,43 @@ function call_openai_api() {
 }
 
 #
+# Get the changes from the expected location (Git, file, directories with files).
+#
+get_changes() {
+  local PATH_TO_USE="$1"
+  local IS_DIR="$2"
+
+  local CHANGES=""
+
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    CHANGES=$(git diff HEAD)
+  fi
+
+  # Use changes as part of prompt
+  if [ "$INCLUDE_CHANGES" = true ]; then
+    ESCAPED_CHANGES=$(echo "$CHANGES" | jq -sRr @json)
+  fi
+
+  # Use file content as part of prompt
+  if [ "$INCLUDE_CHANGES" = false ]; then
+
+    if [ -n "$PATH_TO_USE" ]; then
+      # Use all relevant files in directory as input
+      if [ "$IS_DIR" == "true" ]; then
+        extract_file_contents_into_prompt "$PATH_TO_USE"
+        ESCAPED_CHANGES=$(cat "$FILE_CONTENTS_PROMPT_FILE")
+      else
+        # Use individual file
+        ESCAPED_CHANGES=$(cat "$PATH_TO_USE" | jq -sRr @json)
+      fi
+    fi
+  fi
+}
+
+#
 # The "ask" use case.
 #
-function ask() {
+ask() {
   local PROMPT="$1"
   local RESULT=$(call_openai_api "$PROMPT" false)
 
@@ -95,7 +120,7 @@ function ask() {
 #
 # The "commit" use case.
 #
-function commit() {
+commit() {
   local PROMPT="Generate a Conventional Commits style commit message for the following changes. Use a compact and terse style. For things like dependencies and other verbose changes, bundle these changes into an overall change description. These are the changes:"
   local RESULT=$(call_openai_api "$PROMPT" true)
 
@@ -106,7 +131,7 @@ function commit() {
 #
 # The "review" use case.
 #
-function review() {
+review() {
   local OPTION_1="" # Option switch
   local OPTION_2="" # Path
 
@@ -114,22 +139,27 @@ function review() {
   if [ -n "$2" ]; then OPTION_2="$2"; fi
 
   # First input must be a valid keyword
-  options=("changes" "file")
-  if [[ ! "${options[@]}" =~ "$OPTION_1" ]]; then
-    echo "Missing one of the required options: 'changes' or 'file'. Exiting..."
+  OPTIONS=("changes" "file" "directory")
+  if [[ ! "${OPTIONS[@]}" =~ "$OPTION_1" ]]; then
+    echo "Missing one of the required options: 'changes', 'file', or 'directory'. Exiting..."
     exit 1
   fi
 
-  # Ensure are required values are passed in
+  # Ensure all required values are passed in
   if [[ ("$OPTION_1" == "file") ]] && [ -z "$OPTION_2" ]; then
     echo "Missing a value for the 'path' option. Exiting..."
     exit 1
   fi
 
-  local PROMPT="You are a world-class software engineer. You have been assigned to review the following changes. You will provide actionable feedback while having a supportive tone. Focus on issues and problems, not mincing words. Highlight the issues and address each separately. If one issue is very similar to another, group them together. If one issue has effect on another, explain how. Give feedback on things that could be refactored or improved with common design patterns. Also, ensure any new code has tests if applicable (i.e. not for dependencies, version changes, configuration, or similar). These are the changes:"
+  local IS_DIR=""
+  if [ "$OPTION_1" == "directory" ]; then
+    IS_DIR="true"
+  fi
+
+  local PROMPT="You are a world-class software engineer. You have been assigned to review the following code. You will provide actionable feedback while having a supportive tone. Focus on issues and problems, not mincing words. Highlight the issues and address each separately. If one issue is very similar to another, group them together. If one issue has effect on another, explain how. Give feedback on things that could be refactored or improved with common design patterns. Also, ensure any new code has tests if applicable (i.e. not for dependencies, version changes, configuration, or similar). These are the changes:"
 
   if [ -n "$OPTION_2" ]; then
-    local RESULT=$(call_openai_api "$PROMPT" false "$OPTION_2") # We got a path, so use the file at the path
+    local RESULT=$(call_openai_api "$PROMPT" false "$OPTION_2" "$IS_DIR") # We got a path, so use the file/directory at the path
   else
     local RESULT=$(call_openai_api "$PROMPT" true) # Use the current changes
   fi
@@ -141,7 +171,7 @@ function review() {
 #
 # The "test" use case.
 #
-function test() {
+test() {
   local OPTION_1="" # Option switch
   local OPTION_2="" # Tool
   local OPTION_3="" # Path
@@ -199,7 +229,7 @@ function test() {
 #
 # The "diagram" use case.
 #
-function diagram() {
+diagram() {
   local OPTION_1="" # Option switch
   local OPTION_2="" # Tool
   local OPTION_3="" # Path
@@ -272,6 +302,53 @@ load_config() {
 }
 
 #
+# Extract file contents from a directory source into an aggregated prompt.
+#
+extract_file_contents_into_prompt() {
+  local SEARCH_DIR=""
+
+  if [ -n "$1" ]; then SEARCH_DIR="$1"; fi
+  if [ -z "$SEARCH_DIR" ]; then echo "Missing directory!" && exit 1; fi
+
+  # Make sure the old copy is not in the way
+  rm -f "$FILE_CONTENTS_PROMPT_FILE"
+
+  # List of common programming file extensions
+  local FILE_EXTENSIONS=("js" "py" "java" "c" "cpp" "cs" "php" "rb" "sql" "swift" "go" "ts" "pl" "rs" "dart" "lua" "kt" "groovy" "scala" "r")
+  # Define an array of directories to ignore
+  local IGNORED_DIRS=("node_modules" "build" "dist" ".esbuild" ".webpack" ".serverless" "coverage" "jest-coverage")
+
+  find "$SEARCH_DIR" -type f | while read -r file; do
+    local RELATIVE_PATH=$(basename "$(dirname "$file")")/$(basename "$file")
+
+    # Check if the file extension is in the list of allowed extensions
+    local FILE_EXTENSION="${file##*.}"
+    if [[ ! " ${FILE_EXTENSIONS[@]} " =~ " $FILE_EXTENSION " ]]; then
+      continue
+    fi
+
+    # Check if any part of the file path contains any of the ignored directories
+    local FULL_PATH="$file"
+    local IGNORED=false
+
+    for DIRECTORY in "${IGNORED_DIRS[@]}"; do
+      if echo "$FULL_PATH" | grep -q "/$DIRECTORY/"; then
+        IGNORED=true
+        break
+      fi
+    done
+
+    if [ "$IGNORED" = true ]; then
+      continue
+    fi
+
+    echo -e "Relative Path: $RELATIVE_PATH\n\\n\"\"\"" >>$FILE_CONTENTS_PROMPT_FILE
+    cat "$file" >>$FILE_CONTENTS_PROMPT_FILE
+    echo -e "\"\"\"\\n" >>$FILE_CONTENTS_PROMPT_FILE
+  done
+}
+
+#
 # Orchestrate the startup and the various use cases.
 #
 start() {
@@ -341,7 +418,6 @@ choose_model() {
   fi
 
   # A model was not provided through configuration, let user enter their choice
-
   model_menu
 
   local CHOICE

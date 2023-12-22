@@ -3,6 +3,7 @@
 .dccache
 .DS_Store
 minion.json
+__minion.filecontents.prompt__.txt
 
 # Folders
 node_modules/

@@ -42,18 +42,20 @@ Generate a Conventional Commits style commit message for the following changes. 
 
 ### Code review
 
-Have the LLM generate a code review, focusing on issues and to give feedback on how the changes could be refactored.
+Have the LLM generate a code review, focusing on issues and to give feedback on how the code could be refactored.
 
 ```bash
 minion review changes # Review all changes
 
 minion review file {path} # Review a document at a given location
+
+minion review directory {path} # Review all source code files recursively from location
 ```
 
 Prompt:
 
 ```text
-You are a world-class software engineer. You have been assigned to review the following changes. You will provide actionable feedback while having a supportive tone. Focus on issues and problems, not mincing words. Highlight the issues and address each separately. If one issue is very similar to another, group them together. If one issue has effect on another, explain how. Give feedback on things that could be refactored or improved with common design patterns. Also, ensure any new code has tests if applicable (i.e. not for dependencies, version changes, configuration, or similar). These are the changes:
+You are a world-class software engineer. You have been assigned to review the following code. You will provide actionable feedback while having a supportive tone. Focus on issues and problems, not mincing words. Highlight the issues and address each separately. If one issue is very similar to another, group them together. If one issue has effect on another, explain how. Give feedback on things that could be refactored or improved with common design patterns. Also, ensure any new code has tests if applicable (i.e. not for dependencies, version changes, configuration, or similar). These are the changes:
 ```
 
 ### Write tests for changes or individual files
