@@ -50,6 +50,8 @@ minion review changes # Review all changes
 minion review file {path} # Review a document at a given location
 
 minion review directory {path} # Review all source code files recursively from location
+
+minion review diagram {path} # Review diagram at location (jpeg, png, gif, webp)
 ```
 
 Prompt:
@@ -157,9 +159,6 @@ There is a dedicated [CONTRIBUTING.md](CONTRIBUTING.md), but generally I'm happy
 ## Future ideas
 
 - Support for non-OpenAI providers
-- Support for changing the model used
-- Support for configuration files to drive tool/language choices and such
+- Support for configuration files to additional concepts, like tool/language choices and such
 - Support for custom code/docs review policies
 - Generate code from diagram (`minion scaffold`)
-- `minion review diagrams <PATH>`, add support when OpenAI APIs supports image input
-- `minion review full`, using full codebase when OpenAI APIs support very big context windows

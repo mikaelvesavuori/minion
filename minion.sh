@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MINION_VERSION="1.5.0"
+MINION_VERSION="1.5.1"
 
 # Colors
 GREEN='\033[0;32m'
@@ -36,6 +36,7 @@ call_openai_api() {
   local INCLUDE_CHANGES="$2"
   local PATH_TO_USE="$3"
   local IS_DIR="$4"
+  local IS_IMAGE="$5"
 
   get_changes "$PATH_TO_USE" "$IS_DIR"
 
@@ -43,16 +44,43 @@ call_openai_api() {
   echo "Using model: $MODEL"
 
   local API_URL="https://api.openai.com/v1/chat/completions"
-  local PAYLOAD=$(jq -n --arg model "$MODEL" --arg prompt "$PROMPT" --arg changes "$ESCAPED_CHANGES" '
-  {
-    messages: [
-      {
-        "role": "user",
-        "content": ($prompt + "\n\n" + $changes)
-      }
-    ],
-    "model": $model
-  }')
+  local BASE64_IMAGE=""
+  local PAYLOAD=""
+
+  if [ "$IS_IMAGE" = "true" ]; then
+    MODEL="gpt-4-vision-preview"
+    BASE64_IMAGE=$(base64 <"$PATH_TO_USE")
+    PAYLOAD=$(jq -n --arg prompt "$PROMPT" --arg base64_image "$BASE64_IMAGE" '
+    {
+      "messages": [
+        {
+          "role": "user",
+          "content": [
+            { "type": "text", "text": "($prompt)" },
+            {
+              "type": "image_url",
+              "image_url": {
+                "url": "data:image/jpeg;base64,\($base64_image)"
+              }
+            }
+          ]
+        }
+      ],
+      "model": "gpt-4-vision-preview",
+      "max_tokens": 300
+    }')
+  else
+    PAYLOAD=$(jq -n --arg model "$MODEL" --arg prompt "$PROMPT" --arg changes "$ESCAPED_CHANGES" '
+    {
+      messages: [
+        {
+          "role": "user",
+          "content": ($prompt + "\n\n" + $changes)
+        }
+      ],
+      "model": $model
+    }')
+  fi
 
   local RESPONSE=$(
     curl -X POST "$API_URL" \
@@ -93,7 +121,6 @@ get_changes() {
 
   # Use file content as part of prompt
   if [ "$INCLUDE_CHANGES" = false ]; then
-
     if [ -n "$PATH_TO_USE" ]; then
       # Use all relevant files in directory as input
       if [ "$IS_DIR" == "true" ]; then
@@ -105,6 +132,29 @@ get_changes() {
       fi
     fi
   fi
+}
+
+#
+# Check if the path points to an image.
+#
+check_if_image() {
+  local INPUT="$1"
+
+  # Skip if this is a folder
+  if [ -d "$INPUT" ]; then
+    echo "false"
+    return
+  fi
+
+  local FILE_EXTENSION="${INPUT##*.}"
+  local FILE_EXTENSIONS=("jpeg" "png" "webp" "gif")
+
+  for EXTENSION in "${FILE_EXTENSIONS[@]}"; do
+    if [ "$EXTENSION" = "$FILE_EXTENSION" ]; then
+      echo "true"
+      return
+    fi
+  done
 }
 
 #
@@ -139,9 +189,9 @@ review() {
   if [ -n "$2" ]; then OPTION_2="$2"; fi
 
   # First input must be a valid keyword
-  OPTIONS=("changes" "file" "directory")
+  OPTIONS=("changes" "file" "directory" "diagram")
   if [[ ! "${OPTIONS[@]}" =~ "$OPTION_1" ]]; then
-    echo "Missing one of the required options: 'changes', 'file', or 'directory'. Exiting..."
+    echo "Missing one of the required options: 'changes', 'file', 'directory', or 'diagram'. Exiting..."
     exit 1
   fi
 
@@ -151,6 +201,8 @@ review() {
     exit 1
   fi
 
+  local IS_IMAGE=$(check_if_image "$OPTION_2")
+
   local IS_DIR=""
   if [ "$OPTION_1" == "directory" ]; then
     IS_DIR="true"
@@ -159,7 +211,7 @@ review() {
   local PROMPT="You are a world-class software engineer. You have been assigned to review the following code. You will provide actionable feedback while having a supportive tone. Focus on issues and problems, not mincing words. Highlight the issues and address each separately. If one issue is very similar to another, group them together. If one issue has effect on another, explain how. Give feedback on things that could be refactored or improved with common design patterns. Also, ensure any new code has tests if applicable (i.e. not for dependencies, version changes, configuration, or similar). These are the changes:"
 
   if [ -n "$OPTION_2" ]; then
-    local RESULT=$(call_openai_api "$PROMPT" false "$OPTION_2" "$IS_DIR") # We got a path, so use the file/directory at the path
+    local RESULT=$(call_openai_api "$PROMPT" false "$OPTION_2" "$IS_DIR" "$IS_IMAGE") # We got a path, so use the file/directory at the path
   else
     local RESULT=$(call_openai_api "$PROMPT" true) # Use the current changes
   fi
