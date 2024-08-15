@@ -8,10 +8,11 @@ RESET='\033[0m' # Reset color to default
 
 # Models
 MODEL_1="gpt-3.5-turbo"
-MODEL_2="gpt-3.5-turbo-16k"
-MODEL_3="gpt-4"
-MODEL_4="gpt-4-32k"
-MODEL_5="gpt-4-turbo"
+MODEL_2="gpt-4"
+MODEL_3="gpt-4-turbo"
+MODEL_4="gpt-4o"
+MODEL_5="gpt-4o-mini"
+MODEL_6="chatgpt-4o-latest"
 
 # File to temporarily write file contents to if using directory with files as input
 FILE_CONTENTS_PROMPT_FILE="__minion.filecontents.prompt__.txt"
@@ -48,7 +49,7 @@ call_openai_api() {
   local PAYLOAD=""
 
   if [ "$IS_IMAGE" = "true" ]; then
-    MODEL="gpt-4-vision-preview"
+    MODEL="gpt-4o-mini"
     BASE64_IMAGE=$(base64 <"$PATH_TO_USE")
     PAYLOAD=$(jq -n --arg prompt "$PROMPT" --arg base64_image "$BASE64_IMAGE" '
     {
@@ -66,7 +67,7 @@ call_openai_api() {
           ]
         }
       ],
-      "model": "gpt-4-vision-preview",
+      "model": "gpt-4o-mini",
       "max_tokens": 300
     }')
   else
@@ -455,7 +456,8 @@ model_menu() {
   echo "3. $MODEL_3"
   echo "4. $MODEL_4"
   echo "5. $MODEL_5"
-  echo "6. Exit"
+  echo "6. $MODEL_6"
+  echo "7. Exit"
 }
 
 #
@@ -473,7 +475,7 @@ choose_model() {
   model_menu
 
   local CHOICE
-  read -p "Enter choice [1-6]: " CHOICE
+  read -p "Enter choice [1-7]: " CHOICE
 
   case $CHOICE in
   1) MODEL="$MODEL_1" ;;
@@ -481,7 +483,8 @@ choose_model() {
   3) MODEL="$MODEL_3" ;;
   4) MODEL="$MODEL_4" ;;
   5) MODEL="$MODEL_5" ;;
-  6) exit 0 ;;
+  6) MODEL="$MODEL_6" ;;
+  7) exit 0 ;;
   *) echo "Invalid choice." && return 1 ;;
   esac
 
