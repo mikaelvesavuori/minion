@@ -49,7 +49,7 @@ call_openai_api() {
   local PAYLOAD=""
 
   if [ "$IS_IMAGE" = "true" ]; then
-    MODEL="gpt-4-vision-preview"
+    MODEL="gpt-4o-mini"
     BASE64_IMAGE=$(base64 <"$PATH_TO_USE")
     PAYLOAD=$(jq -n --arg prompt "$PROMPT" --arg base64_image "$BASE64_IMAGE" '
     {
@@ -67,7 +67,7 @@ call_openai_api() {
           ]
         }
       ],
-      "model": "gpt-4-vision-preview",
+      "model": "gpt-4o-mini",
       "max_tokens": 300
     }')
   else
